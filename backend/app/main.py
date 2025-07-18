@@ -9,7 +9,9 @@ from models import (
     TranscriptUploadResponse, 
     TranscriptResponse, 
     SpeakerRenameRequest, 
-    SpeakerRenameResponse
+    SpeakerRenameResponse,
+    MetadataNameRequest,
+    MetadataNameResponse
 )
 from services.file_manager import FileManager
 from services.transcription import TranscriptionService
@@ -45,6 +47,37 @@ transcription_service = TranscriptionService(
 
 # Allowed file extensions
 ALLOWED_EXTENSIONS = {".mp3", ".wav", ".m4a", ".flac", ".aac", "mp4"}
+
+
+# Endpoint to update transcript metadata with a name
+@app.post("/api/transcript/name", response_model=MetadataNameResponse)
+async def update_metadata_name(request: MetadataNameRequest):
+    """Update transcript metadata with a name"""
+    try:
+        # Check if transcript exists
+        if not file_manager.transcript_exists(request.transcript_id):
+            raise HTTPException(status_code=404, detail="Transcript not found")
+
+        # Update metadata name
+        success = file_manager.update_metadata_name(
+            request.transcript_id,
+            request.name
+        )
+
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to update metadata name")
+
+        logger.info(f"Updated metadata name in {request.transcript_id}: {request.name}")
+
+        return MetadataNameResponse(
+            success=True,
+            message=f"Successfully updated metadata name to '{request.name}'"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating metadata name: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 def validate_audio_file(filename: str) -> bool:

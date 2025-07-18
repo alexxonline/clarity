@@ -1,3 +1,12 @@
+
+# Request and response models for updating transcript metadata name
+class MetadataNameRequest(BaseModel):
+    transcript_id: str
+    name: str
+
+class MetadataNameResponse(BaseModel):
+    success: bool
+    message: str
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime

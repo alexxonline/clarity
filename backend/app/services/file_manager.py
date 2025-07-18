@@ -9,6 +9,22 @@ logger = logging.getLogger(__name__)
 
 
 class FileManager:
+    def update_metadata_name(self, transcript_id: str, name: str) -> bool:
+        """Update the 'name' field in the transcript's metadata JSON file."""
+        json_path = os.path.join(self.transcript_dir, f"{transcript_id}.json")
+        if not os.path.exists(json_path):
+            return False
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                metadata = json.load(f)
+            metadata["name"] = name
+            with open(json_path, "w", encoding="utf-8") as f:
+                json.dump(metadata, f, indent=2, ensure_ascii=False)
+            logger.info(f"Updated metadata name in {transcript_id}: {name}")
+            return True
+        except Exception as e:
+            logger.error(f"Error updating metadata name in {transcript_id}: {e}")
+            return False
     def __init__(self, audio_dir: str = "data/audio", transcript_dir: str = "data/transcripts"):
         self.audio_dir = audio_dir
         self.transcript_dir = transcript_dir
