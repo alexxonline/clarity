@@ -14,5 +14,18 @@ export async function uploadFile(file) {
 export async function fetchTranscript(fileId) {
   const response = await fetch(`http://localhost:8000/api/transcript/${encodeURIComponent(fileId)}`);
   if (!response.ok) throw new Error('Transcript fetch failed');
-  return response.json(); // expects { fileName, paragraphs }
+  return response.json(); 
+  // expects: 
+  // {
+  //   status: "completed" | "pending" | "failed",
+  //   transcript: "Speaker A: text...",
+  //   metadata: {
+  //     id: string,
+  //     language: string,
+  //     duration: string,
+  //     upload_date: string,
+  //     engine: string,
+  //     speakers: string[]
+  //   }
+  // }
 }

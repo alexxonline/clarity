@@ -53,6 +53,17 @@ body {
   padding: 2rem;
   text-align: left;
 }
+.transcript-metadata {
+  background: #e8f5e8;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid #4caf50;
+}
+.transcript-metadata p {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
 .paragraph-block {
   margin-bottom: 1.2rem;
 }

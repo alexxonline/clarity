@@ -40,7 +40,7 @@ class TranscriptionService:
             # Configure transcription settings
             config = aai.TranscriptionConfig(
                 speaker_labels=True,
-                language_code="en"
+                language_code="es"
             )
             
             # Create transcriber
