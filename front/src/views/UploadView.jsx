@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import { useState } from 'preact/hooks';
 import { route } from 'preact-router';
-import { generateMockTranscript } from '../utils/mockTranscript';
+import { uploadFile } from '../utils/api';
 
 const ACCEPTED_TYPES = ['audio/mp3', 'audio/aac', 'audio/wav', 'video/mp4'];
 const ACCEPTED_EXTS = ['.mp3', '.mp4', '.aac', '.wav'];
@@ -17,7 +17,8 @@ export default function UploadView() {
     handleFile(droppedFile);
   }
 
-  function handleFile(selectedFile) {
+
+  async function handleFile(selectedFile) {
     if (!selectedFile) return;
     const ext = selectedFile.name.slice(selectedFile.name.lastIndexOf('.')).toLowerCase();
     if (!ACCEPTED_EXTS.includes(ext)) {
@@ -26,25 +27,18 @@ export default function UploadView() {
     }
     setError('');
     setFile(selectedFile);
-    simulateUpload(selectedFile);
+    setProgress(10);
+    try {
+      const result = await uploadFile(selectedFile);
+      setProgress(100);
+      route(`/transcript/${encodeURIComponent(result.transcript_id)}`);
+    } catch (err) {
+      setError('Upload failed.');
+      setProgress(0);
+    }
   }
 
-  function simulateUpload(selectedFile) {
-    setProgress(0);
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          // Generate mock transcript and navigate
-          const transcript = generateMockTranscript(selectedFile.name);
-          window.sessionStorage.setItem('transcript_' + selectedFile.name, JSON.stringify(transcript));
-          route(`/transcript/${encodeURIComponent(selectedFile.name)}`);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 100);
-  }
+  // simulateUpload removed, now handled by backend
 
   function handleBrowse(e) {
     handleFile(e.target.files[0]);

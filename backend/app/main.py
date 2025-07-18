@@ -44,7 +44,7 @@ transcription_service = TranscriptionService(
 )
 
 # Allowed file extensions
-ALLOWED_EXTENSIONS = {".mp3", ".wav", ".m4a", ".flac", ".aac"}
+ALLOWED_EXTENSIONS = {".mp3", ".wav", ".m4a", ".flac", ".aac", "mp4"}
 
 
 def validate_audio_file(filename: str) -> bool:

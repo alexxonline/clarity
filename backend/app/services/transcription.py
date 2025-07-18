@@ -77,7 +77,7 @@ class TranscriptionService:
             # Create metadata
             metadata = {
                 "id": transcript_id,
-                "language": transcript.language_code or "en",
+                "language": transcript.json_response["language_code"] or "en",
                 "duration": f"{transcript.audio_duration/1000:.1f}s" if transcript.audio_duration else "unknown",
                 "upload_date": datetime.now().strftime("%Y-%m-%d"),
                 "engine": "AssemblyAI",

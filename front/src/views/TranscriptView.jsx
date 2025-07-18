@@ -1,23 +1,22 @@
 import { h } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { route } from 'preact-router';
+import { fetchTranscript } from '../utils/api';
 
 export default function TranscriptView({ fileId }) {
   const [loading, setLoading] = useState(true);
   const [transcript, setTranscript] = useState(null);
 
   useEffect(() => {
-    // Simulate loading
     setLoading(true);
-    setTimeout(() => {
-      const data = window.sessionStorage.getItem('transcript_' + decodeURIComponent(fileId));
-      if (!data) {
+    fetchTranscript(fileId)
+      .then(data => {
+        setTranscript(data);
+        setLoading(false);
+      })
+      .catch(() => {
         route('/upload');
-        return;
-      }
-      setTranscript(JSON.parse(data));
-      setLoading(false);
-    }, 0);
+      });
   }, [fileId]);
 
   if (loading) return <div className="loading">Loading transcript…</div>;
