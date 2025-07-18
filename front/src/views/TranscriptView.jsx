@@ -81,6 +81,9 @@ export default function TranscriptView({ fileId }) {
           <p><strong>Language:</strong> {transcript.metadata.language}</p>
           <p><strong>Engine:</strong> {transcript.metadata.engine}</p>
           <p><strong>Date:</strong> {transcript.metadata.upload_date}</p>
+          {Array.isArray(transcript.metadata.speakers) && transcript.metadata.speakers.length > 0 && (
+            <p><strong>Speakers:</strong> {transcript.metadata.speakers.join(', ')}</p>
+          )}
         </div>
       )}
       {transcript.paragraphs.map((block, idx) => (
