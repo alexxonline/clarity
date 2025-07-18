@@ -1,0 +1,67 @@
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+body {
+  background: #fff;
+  color: #222;
+  font-family: 'Inter', Arial, sans-serif;
+  margin: 0;
+}
+.upload-container {
+  max-width: 400px;
+  margin: 2rem auto;
+  background: #f7faff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,64,0.08);
+  padding: 2rem;
+  text-align: center;
+}
+.drop-area {
+  border: 2px dashed #1976d2;
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 2rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+.browse-btn {
+  display: inline-block;
+  background: #1976d2;
+  color: #fff;
+  padding: 0.5rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+.progress {
+  margin: 1rem 0;
+}
+.error {
+  color: #d32f2f;
+  margin-top: 0.5rem;
+}
+.transcript-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  background: #f7faff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,64,0.08);
+  padding: 2rem;
+  text-align: left;
+}
+.paragraph-block {
+  margin-bottom: 1.2rem;
+}
+.speaker-label {
+  color: #1976d2;
+  font-weight: bold;
+}
+.loading {
+  text-align: center;
+  color: #1976d2;
+  margin-top: 2rem;
+}

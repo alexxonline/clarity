@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  transcription-api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app/data/audio:/app/app/data/audio
+      - ./app/data/transcripts:/app/app/data/transcripts
+    environment:
+      - ASSEMBLYAI_API_KEY=${ASSEMBLYAI_API_KEY}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
