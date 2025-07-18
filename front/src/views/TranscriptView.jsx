@@ -1,11 +1,15 @@
 import { h } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { route } from 'preact-router';
-import { fetchTranscript } from '../utils/api';
+import { fetchTranscript, renameSpeaker } from '../utils/api';
 
 export default function TranscriptView({ fileId }) {
   const [loading, setLoading] = useState(true);
   const [transcript, setTranscript] = useState(null);
+  const [editingSpeaker, setEditingSpeaker] = useState(null); // speaker name being edited
+  const [newSpeakerName, setNewSpeakerName] = useState('');
+  const [renaming, setRenaming] = useState(false); // loading state for rename
+  const [renameError, setRenameError] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -48,6 +52,53 @@ export default function TranscriptView({ fileId }) {
       });
   }, [fileId]);
 
+  // Handler for clicking a speaker name
+  const handleSpeakerClick = (speaker) => {
+    setEditingSpeaker(speaker);
+    setNewSpeakerName(speaker);
+    setRenameError(null);
+  };
+
+  // Handler for canceling rename
+  const handleCancelRename = () => {
+    setEditingSpeaker(null);
+    setNewSpeakerName('');
+    setRenameError(null);
+  };
+
+  // Handler for confirming rename
+  const handleConfirmRename = async () => {
+    if (!newSpeakerName.trim() || newSpeakerName === editingSpeaker) {
+      setEditingSpeaker(null);
+      setNewSpeakerName('');
+      setRenameError(null);
+      return;
+    }
+    setRenaming(true);
+    setRenameError(null);
+    try {
+      await renameSpeaker(fileId, editingSpeaker, newSpeakerName.trim());
+      // Refresh transcript after rename
+      fetchTranscript(fileId).then(data => {
+        if (data.status === 'completed' && data.transcript) {
+          const parsedTranscript = parseTranscriptText(data.transcript);
+          setTranscript({
+            fileName: data.metadata?.id || fileId,
+            paragraphs: parsedTranscript,
+            metadata: data.metadata
+          });
+        }
+        setEditingSpeaker(null);
+        setNewSpeakerName('');
+        setRenameError(null);
+      });
+    } catch (e) {
+      setRenameError(e.message || 'Failed to rename speaker');
+    } finally {
+      setRenaming(false);
+    }
+  };
+
   // Helper function to parse transcript text into paragraphs
   const parseTranscriptText = (transcriptText) => {
     if (!transcriptText) return [];
@@ -82,8 +133,35 @@ export default function TranscriptView({ fileId }) {
           <p><strong>Engine:</strong> {transcript.metadata.engine}</p>
           <p><strong>Date:</strong> {transcript.metadata.upload_date}</p>
           {Array.isArray(transcript.metadata.speakers) && transcript.metadata.speakers.length > 0 && (
-            <p><strong>Speakers:</strong> {transcript.metadata.speakers.join(', ')}</p>
+            <p><strong>Speakers:</strong> {transcript.metadata.speakers.map((speaker, idx) => (
+              <span key={speaker} style={{ marginRight: 8 }}>
+                {editingSpeaker === speaker ? (
+                  <>
+                    <input
+                      type="text"
+                      value={newSpeakerName}
+                      onInput={e => setNewSpeakerName(e.target.value)}
+                      disabled={renaming}
+                      style={{ marginRight: 4 }}
+                      autoFocus
+                    />
+                    <button onClick={handleConfirmRename} disabled={renaming} style={{ marginRight: 2 }}>OK</button>
+                    <button onClick={handleCancelRename} disabled={renaming}>Cancel</button>
+                  </>
+                ) : (
+                  <span
+                    className="editable-speaker"
+                    style={{ cursor: 'pointer', textDecoration: 'underline', color: '#1976d2' }}
+                    onClick={() => handleSpeakerClick(speaker)}
+                  >
+                    {speaker}
+                  </span>
+                )}
+                {idx < transcript.metadata.speakers.length - 1 && ', '}
+              </span>
+            ))}</p>
           )}
+          {renameError && <p style={{ color: '#d32f2f', marginTop: 4 }}>{renameError}</p>}
         </div>
       )}
       {transcript.paragraphs.map((block, idx) => (

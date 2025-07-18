@@ -1,3 +1,20 @@
+// Rename a speaker in a transcript
+export async function renameSpeaker(transcriptId, currentName, newName) {
+  const response = await fetch(`http://localhost:8000/api/transcript/speakers`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      transcript_id: transcriptId,
+      current_name: currentName,
+      new_name: newName
+    })
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to rename speaker');
+  }
+  return response.json();
+}
 // API utility for uploading files and fetching transcripts
 
 export async function uploadFile(file) {
