@@ -38,21 +38,36 @@ const TranscriptsView = () => {
                     </Link>
                 </div>
             ) : (
-                <div className="transcripts-grid">
-                    {transcripts.map(transcript => (
-                        <Link href={`/transcript/${transcript.id}`} key={transcript.id} className="transcript-card">
-                            <h2 className="transcript-name">{transcript.name || 'Untitled Transcript'}</h2>
-                            <p className="transcript-details"><strong>ID:</strong> {transcript.id}</p>
-                            <p className="transcript-details"><strong>Date:</strong> {new Date(transcript.upload_date).toLocaleDateString()}</p>
-                            <p className="transcript-details"><strong>Duration:</strong> {transcript.duration}</p>
-                            <p className="status-container">
-                                <span className={`status-badge ${transcript.status === 'completed' ? 'status-completed' : 'status-processing'}`}>
-                                    {transcript.status}
-                                </span>
-                            </p>
-                        </Link>
-                    ))}
-                </div>
+                <table className="transcripts-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {transcripts.map(transcript => (
+                            <tr key={transcript.id}>
+                                <td>
+                                    <Link href={`/transcript/${transcript.id}`} className="transcript-link">
+                                        {transcript.name || 'Untitled Transcript'}
+                                    </Link>
+                                </td>
+                                <td>{transcript.id}</td>
+                                <td>{new Date(transcript.upload_date).toLocaleDateString()}</td>
+                                <td>{transcript.duration}</td>
+                                <td>
+                                    <span className={`status-badge ${transcript.status === 'completed' ? 'status-completed' : 'status-processing'}`}>
+                                        {transcript.status}
+                                    </span>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             )}
         </div>
     );

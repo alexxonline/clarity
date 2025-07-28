@@ -49,55 +49,35 @@
     background-color: #2563eb;
 }
 
-.transcripts-grid {
-    display: grid;
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-    gap: 1.5rem;
+.transcripts-table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-@media (min-width: 768px) {
-    .transcripts-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+.transcripts-table th,
+.transcripts-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
 }
 
-@media (min-width: 1024px) {
-    .transcripts-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-}
-
-.transcript-card {
-    display: block;
-    padding: 1.5rem;
-    background-color: #ffffff;
-    border-radius: 0.5rem;
-    border: 1px solid #e5e7eb;
-    transition: box-shadow 0.3s;
-}
-
-.transcript-card:hover {
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-}
-
-.transcript-name {
-    font-size: 1.25rem;
-    line-height: 1.75rem;
+.transcripts-table th {
+    background-color: #f9fafb;
     font-weight: 600;
-    margin-bottom: 0.5rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.transcript-details {
     color: #4b5563;
-    margin-bottom: 0.25rem;
 }
 
-.status-container {
-    text-transform: capitalize;
-    margin-top: 1rem;
+.transcripts-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+.transcript-link {
+    color: #3b82f6;
+    text-decoration: none;
+}
+
+.transcript-link:hover {
+    text-decoration: underline;
 }
 
 .status-badge {
