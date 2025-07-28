@@ -76,3 +76,39 @@ body {
   color: #1976d2;
   margin-top: 2rem;
 }
+
+/* Header Styles */
+.app-header {
+  background-color: #1f2937;
+  color: #ffffff;
+  padding: 1rem;
+}
+
+.app-nav {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-nav .brand-link {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 700; /* font-bold */
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.app-nav .nav-links a {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.app-nav .nav-links a:not(:last-child) {
+    margin-right: 1rem; /* mr-4 */
+}
+
+.app-nav .nav-links a.active {
+  font-weight: 700; /* font-bold */
+}

@@ -9,12 +9,12 @@ import './app.css';
 export function App() {
   return (
     <div>
-      <header className="bg-gray-800 text-white p-4">
-        <nav className="container mx-auto flex justify-between">
-          <Link href="/" className="text-lg font-bold">Transcript Creator</Link>
-          <div>
-            <Link href="/" activeClassName="font-bold" className="mr-4">Upload</Link>
-            <Link href="/transcripts" activeClassName="font-bold">All Transcripts</Link>
+      <header className="app-header">
+        <nav className="app-nav">
+          <Link href="/" className="brand-link">Transcript Creator</Link>
+          <div class="nav-links">
+            <Link href="/" activeClassName="active">Upload</Link>
+            <Link href="/transcripts" activeClassName="active">All Transcripts</Link>
           </div>
         </nav>
       </header>
