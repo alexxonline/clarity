@@ -11,7 +11,8 @@ from models import (
     SpeakerRenameRequest, 
     SpeakerRenameResponse,
     MetadataNameRequest,
-    MetadataNameResponse
+    MetadataNameResponse,
+    TranscriptsResponse
 )
 from services.file_manager import FileManager
 from services.transcription import TranscriptionService
@@ -50,6 +51,17 @@ ALLOWED_EXTENSIONS = {".mp3", ".wav", ".m4a", ".flac", ".aac", "mp4"}
 
 
 # Endpoint to update transcript metadata with a name
+@app.get("/api/transcripts", response_model=TranscriptsResponse)
+async def get_transcripts():
+    """Get all transcripts metadata"""
+    try:
+        transcripts_metadata = file_manager.get_all_transcripts_metadata()
+        return TranscriptsResponse(transcripts=transcripts_metadata)
+    except Exception as e:
+        logger.error(f"Error getting all transcripts: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
 @app.post("/api/transcript/name", response_model=MetadataNameResponse)
 async def update_metadata_name(request: MetadataNameRequest):
     """Update transcript metadata with a name"""

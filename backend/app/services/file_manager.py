@@ -136,6 +136,36 @@ class FileManager:
             logger.error(f"Error updating speaker names in {transcript_id}: {e}")
             return False
     
+    def get_all_transcripts_metadata(self) -> List[Dict]:
+        """Get metadata for all transcripts"""
+        all_metadata = []
+        for filename in os.listdir(self.transcript_dir):
+            if filename.endswith(".json"):
+                transcript_id = os.path.splitext(filename)[0]
+                json_path = os.path.join(self.transcript_dir, filename)
+                try:
+                    with open(json_path, "r", encoding="utf-8") as f:
+                        metadata = json.load(f)
+                    
+                    # Determine status
+                    # This is a simplified status check. You might need a more robust
+                    # way to track transcription status (e.g., from a database or cache).
+                    status = "completed" if self.transcript_exists(transcript_id) else "pending"
+                    
+                    all_metadata.append({
+                        "id": transcript_id,
+                        "name": metadata.get("name"),
+                        "upload_date": metadata.get("upload_date"),
+                        "duration": metadata.get("duration"),
+                        "status": status
+                    })
+                except Exception as e:
+                    logger.error(f"Error reading metadata from {filename}: {e}")
+        
+        # Sort by upload_date in descending order
+        all_metadata.sort(key=lambda x: x.get('upload_date', ''), reverse=True)
+        return all_metadata
+
     def transcript_exists(self, transcript_id: str) -> bool:
         """Check if transcript files exist"""
         txt_path = os.path.join(self.transcript_dir, f"{transcript_id}.txt")

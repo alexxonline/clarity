@@ -1,3 +1,11 @@
+export async function getTranscripts() {
+  const response = await fetch('http://localhost:8000/api/transcripts');
+  if (!response.ok) {
+    throw new Error('Failed to fetch transcripts');
+  }
+  return response.json();
+}
+
 // Update transcript name
 export async function updateTranscriptName(transcriptId, name) {
   const response = await fetch('http://localhost:8000/api/transcript/name', {
