@@ -128,6 +128,7 @@ export default function TranscriptView({ fileId }) {
       <h2>Transcript for {transcript.fileName}</h2>
       {transcript.metadata && (
         <div className="transcript-metadata">
+          <p><strong>Name:</strong> {transcript.metadata.name}</p>
           <p><strong>Duration:</strong> {transcript.metadata.duration}</p>
           <p><strong>Language:</strong> {transcript.metadata.language}</p>
           <p><strong>Engine:</strong> {transcript.metadata.engine}</p>
