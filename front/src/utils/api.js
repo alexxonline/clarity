@@ -67,3 +67,15 @@ export async function fetchTranscript(fileId) {
   //   }
   // }
 }
+
+export async function deleteTranscript(transcriptId) {
+  const response = await fetch(`http://localhost:8000/api/transcript/${encodeURIComponent(transcriptId)}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to delete transcript');
+  }
+  // No JSON body is returned on a 204 No Content response
+  return;
+}

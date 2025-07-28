@@ -210,6 +210,33 @@ async def rename_speaker(request: SpeakerRenameRequest):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+@app.delete("/api/transcript/{transcript_id}", status_code=204)
+async def delete_transcript(transcript_id: str):
+    """Delete a transcript and its associated files"""
+    try:
+        # Check if transcript exists before attempting deletion
+        if not file_manager.transcript_exists(transcript_id):
+            raise HTTPException(status_code=404, detail="Transcript not found")
+
+        # Delete all associated files
+        success = file_manager.delete_transcript(transcript_id)
+
+        if not success:
+            # This case might indicate a partial deletion or other issues
+            raise HTTPException(status_code=500, detail="Failed to delete all transcript files")
+
+        logger.info(f"Successfully deleted transcript and all associated files for ID: {transcript_id}")
+
+        # No content to return on successful deletion
+        return
+
+    except HTTPException:
+        raise  # Re-raise HTTPException to ensure FastAPI handles it
+    except Exception as e:
+        logger.error(f"Error deleting transcript {transcript_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""

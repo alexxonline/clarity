@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { route } from 'preact-router';
-import { fetchTranscript, renameSpeaker, updateTranscriptName } from '../utils/api';
+import { fetchTranscript, renameSpeaker, updateTranscriptName, deleteTranscript } from '../utils/api';
 
 export default function TranscriptView({ fileId }) {
   const [loading, setLoading] = useState(true);
@@ -14,6 +14,9 @@ export default function TranscriptView({ fileId }) {
   const [newTranscriptName, setNewTranscriptName] = useState('');
   const [nameUpdateError, setNameUpdateError] = useState(null);
   const [updatingName, setUpdatingName] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -151,6 +154,25 @@ export default function TranscriptView({ fileId }) {
     }
   };
 
+  // Handler for deleting a transcript
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteTranscript(fileId);
+      route('/transcripts');
+    } catch (e) {
+      setDeleteError(e.message || 'Failed to delete transcript');
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   // Helper function to parse transcript text into paragraphs
   const parseTranscriptText = (transcriptText) => {
     if (!transcriptText) return [];
@@ -256,6 +278,24 @@ export default function TranscriptView({ fileId }) {
           <span className="paragraph-text"> {block.text}</span>
         </div>
       ))}
+      <div style={{ marginTop: '2rem', borderTop: '1px solid #ccc', paddingTop: '1rem' }}>
+        <button 
+          onClick={handleDeleteClick} 
+          style={{ backgroundColor: '#d32f2f', color: 'white', padding: '0.5rem 1rem', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+        >
+          Delete Transcript
+        </button>
+        {showDeleteConfirm && (
+          <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #d32f2f', borderRadius: '4px' }}>
+            <p>Are you sure you want to delete this transcript? This action cannot be undone.</p>
+            <button onClick={handleConfirmDelete} disabled={deleting} style={{ marginRight: '1rem' }}>
+              {deleting ? 'Deleting...' : 'Yes, Delete'}
+            </button>
+            <button onClick={() => setShowDeleteConfirm(false)} disabled={deleting}>Cancel</button>
+            {deleteError && <p style={{ color: '#d32f2f', marginTop: '0.5rem' }}>{deleteError}</p>}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

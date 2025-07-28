@@ -171,3 +171,40 @@ class FileManager:
         txt_path = os.path.join(self.transcript_dir, f"{transcript_id}.txt")
         json_path = os.path.join(self.transcript_dir, f"{transcript_id}.json")
         return os.path.exists(txt_path) and os.path.exists(json_path)
+
+    def delete_transcript(self, transcript_id: str) -> bool:
+        """Delete all files associated with a transcript"""
+        txt_path = os.path.join(self.transcript_dir, f"{transcript_id}.txt")
+        json_path = os.path.join(self.transcript_dir, f"{transcript_id}.json")
+        audio_path = self.get_audio_file_path(transcript_id)
+
+        deleted_files = True
+
+        # Delete transcript .txt file
+        try:
+            if os.path.exists(txt_path):
+                os.remove(txt_path)
+                logger.info(f"Deleted transcript file: {txt_path}")
+        except Exception as e:
+            logger.error(f"Error deleting transcript file {txt_path}: {e}")
+            deleted_files = False
+
+        # Delete metadata .json file
+        try:
+            if os.path.exists(json_path):
+                os.remove(json_path)
+                logger.info(f"Deleted metadata file: {json_path}")
+        except Exception as e:
+            logger.error(f"Error deleting metadata file {json_path}: {e}")
+            deleted_files = False
+
+        # Delete audio file
+        try:
+            if audio_path and os.path.exists(audio_path):
+                os.remove(audio_path)
+                logger.info(f"Deleted audio file: {audio_path}")
+        except Exception as e:
+            logger.error(f"Error deleting audio file {audio_path}: {e}")
+            deleted_files = False
+
+        return deleted_files
