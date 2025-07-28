@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { route } from 'preact-router';
-import { fetchTranscript, renameSpeaker } from '../utils/api';
+import { fetchTranscript, renameSpeaker, updateTranscriptName } from '../utils/api';
 
 export default function TranscriptView({ fileId }) {
   const [loading, setLoading] = useState(true);
@@ -10,6 +10,10 @@ export default function TranscriptView({ fileId }) {
   const [newSpeakerName, setNewSpeakerName] = useState('');
   const [renaming, setRenaming] = useState(false); // loading state for rename
   const [renameError, setRenameError] = useState(null);
+  const [editingName, setEditingName] = useState(false); // name editing state
+  const [newTranscriptName, setNewTranscriptName] = useState('');
+  const [nameUpdateError, setNameUpdateError] = useState(null);
+  const [updatingName, setUpdatingName] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -99,6 +103,54 @@ export default function TranscriptView({ fileId }) {
     }
   };
 
+  // Handler for starting name edit
+  const handleNameClick = () => {
+    setEditingName(true);
+    setNewTranscriptName(transcript.metadata?.name || '');
+    setNameUpdateError(null);
+  };
+
+  // Handler for canceling name edit
+  const handleCancelNameEdit = () => {
+    setEditingName(false);
+    setNewTranscriptName('');
+    setNameUpdateError(null);
+  };
+
+  // Handler for confirming name update
+  const handleConfirmNameUpdate = async () => {
+    const trimmedName = newTranscriptName.trim();
+    if (!trimmedName || trimmedName === transcript.metadata?.name) {
+      setEditingName(false);
+      setNewTranscriptName('');
+      setNameUpdateError(null);
+      return;
+    }
+    setUpdatingName(true);
+    setNameUpdateError(null);
+    try {
+      await updateTranscriptName(fileId, trimmedName);
+      // Refresh transcript after name update
+      fetchTranscript(fileId).then(data => {
+        if (data.status === 'completed' && data.transcript) {
+          const parsedTranscript = parseTranscriptText(data.transcript);
+          setTranscript({
+            fileName: data.metadata?.id || fileId,
+            paragraphs: parsedTranscript,
+            metadata: data.metadata
+          });
+        }
+        setEditingName(false);
+        setNewTranscriptName('');
+        setNameUpdateError(null);
+      });
+    } catch (e) {
+      setNameUpdateError(e.message || 'Failed to update transcript name');
+    } finally {
+      setUpdatingName(false);
+    }
+  };
+
   // Helper function to parse transcript text into paragraphs
   const parseTranscriptText = (transcriptText) => {
     if (!transcriptText) return [];
@@ -128,7 +180,38 @@ export default function TranscriptView({ fileId }) {
       <h2>Transcript for {transcript.fileName}</h2>
       {transcript.metadata && (
         <div className="transcript-metadata">
-          <p><strong>Name:</strong> {transcript.metadata.name}</p>
+          <p><strong>Name:</strong> {
+            editingName ? (
+              <>
+                <input
+                  type="text"
+                  value={newTranscriptName}
+                  onInput={e => setNewTranscriptName(e.target.value)}
+                  disabled={updatingName}
+                  style={{ marginLeft: 8, marginRight: 4 }}
+                  autoFocus
+                />
+                <button onClick={handleConfirmNameUpdate} disabled={updatingName} style={{ marginRight: 2 }}>OK</button>
+                <button onClick={handleCancelNameEdit} disabled={updatingName}>Cancel</button>
+              </>
+            ) : transcript.metadata.name ? (
+              <span
+                className="editable-name"
+                style={{ cursor: 'pointer', textDecoration: 'underline', color: '#1976d2', marginLeft: 8 }}
+                onClick={handleNameClick}
+              >
+                {transcript.metadata.name}
+              </span>
+            ) : (
+              <button 
+                onClick={handleNameClick}
+                style={{ marginLeft: 8, padding: '2px 8px', fontSize: '12px' }}
+              >
+                Add Name
+              </button>
+            )
+          }</p>
+          {nameUpdateError && <p style={{ color: '#d32f2f', marginTop: 4 }}>{nameUpdateError}</p>}
           <p><strong>Duration:</strong> {transcript.metadata.duration}</p>
           <p><strong>Language:</strong> {transcript.metadata.language}</p>
           <p><strong>Engine:</strong> {transcript.metadata.engine}</p>
