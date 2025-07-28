@@ -24,6 +24,7 @@ class TranscriptMetadata(BaseModel):
     upload_date: str
     engine: str
     speakers: List[str]
+    name: Optional[str] = None
 
 
 class TranscriptResponse(BaseModel):
