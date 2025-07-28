@@ -1,0 +1,122 @@
+
+.transcripts-view-container {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 2rem;
+}
+
+.transcripts-view-header {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.centered-text-container {
+    text-align: center;
+    padding: 2rem;
+}
+
+.error-text {
+    color: #ef4444;
+}
+
+.no-transcripts-container {
+    text-align: center;
+    padding: 2rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+}
+
+.no-transcripts-text {
+    color: #6b7280;
+}
+
+.upload-link {
+    margin-top: 1rem;
+    display: inline-block;
+    background-color: #3b82f6;
+    color: #ffffff;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-radius: 0.375rem;
+}
+
+.upload-link:hover {
+    background-color: #2563eb;
+}
+
+.transcripts-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .transcripts-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    .transcripts-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.transcript-card {
+    display: block;
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    transition: box-shadow 0.3s;
+}
+
+.transcript-card:hover {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.transcript-name {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.transcript-details {
+    color: #4b5563;
+    margin-bottom: 0.25rem;
+}
+
+.status-container {
+    text-transform: capitalize;
+    margin-top: 1rem;
+}
+
+.status-badge {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+}
+
+.status-completed {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-processing {
+    background-color: #fef3c7;
+    color: #92400e;
+}
