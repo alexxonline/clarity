@@ -1,3 +1,16 @@
+// Update transcript name
+export async function updateTranscriptName(transcriptId, name) {
+  const response = await fetch('http://localhost:8000/api/transcript/name', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ transcript_id: transcriptId, name })
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to update transcript name');
+  }
+  return response.json();
+}
 // Rename a speaker in a transcript
 export async function renameSpeaker(transcriptId, currentName, newName) {
   const response = await fetch(`http://localhost:8000/api/transcript/speakers`, {
