@@ -2,12 +2,12 @@ version: '3.8'
 
 services:
   transcription-api:
-    build: .
+    build: ./backend/.
     ports:
       - "8000:8000"
     volumes:
-      - ./app/data/audio:/app/app/data/audio
-      - ./app/data/transcripts:/app/app/data/transcripts
+      - ./backend/app/data/audio:/app/app/data/audio
+      - ./backend/app/data/transcripts:/app/app/data/transcripts
     environment:
       - ASSEMBLYAI_API_KEY=${ASSEMBLYAI_API_KEY}
     restart: unless-stopped
