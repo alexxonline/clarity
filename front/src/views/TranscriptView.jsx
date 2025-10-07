@@ -17,47 +17,36 @@ export default function TranscriptView({ fileId }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
-
-  useEffect(() => {
-    setLoading(true);
-    fetchTranscript(fileId)
-      .then(data => {
-        // Parse the new API response format
-        if (data.status === 'completed' && data.transcript) {
-          const parsedTranscript = parseTranscriptText(data.transcript);
-          setTranscript({
-            fileName: data.metadata?.id || fileId,
-            paragraphs: parsedTranscript,
-            metadata: data.metadata
-          });
-        } else if (data.status === 'pending') {
-          // If still processing, show loading state
-          setTimeout(() => {
-            fetchTranscript(fileId)
-              .then(updatedData => {
-                if (updatedData.status === 'completed') {
-                  const parsedTranscript = parseTranscriptText(updatedData.transcript);
-                  setTranscript({
-                    fileName: updatedData.metadata?.id || fileId,
-                    paragraphs: parsedTranscript,
-                    metadata: updatedData.metadata
-                  });
-                  setLoading(false);
-                }
-              });
-          }, 2000); // Poll every 2 seconds
-          return;
-        } else {
-          // Failed or invalid response
-          route('/upload');
-          return;
-        }
+  
+useEffect(() => {
+  setLoading(true);
+  
+  const pollTranscript = async () => {
+    try {
+      const data = await fetchTranscript(fileId);
+      
+      if (data.status === 'completed' && data.transcript) {
+        const parsedTranscript = parseTranscriptText(data.transcript);
+        setTranscript({
+          fileName: data.metadata?.id || fileId,
+          paragraphs: parsedTranscript,
+          metadata: data.metadata
+        });
         setLoading(false);
-      })
-      .catch(() => {
+      } else if (data.status === 'pending') {
+        // Continue polling every 2 seconds until complete
+        setTimeout(pollTranscript, 2000);
+      } else {
+        // Failed or invalid response
         route('/upload');
-      });
-  }, [fileId]);
+      }
+    } catch (error) {
+      route('/upload');
+    }
+  };
+  
+  pollTranscript();
+}, [fileId]);
 
   // Handler for clicking a speaker name
   const handleSpeakerClick = (speaker) => {
