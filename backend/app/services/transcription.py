@@ -47,7 +47,8 @@ class TranscriptionService:
             transcriber = aai.Transcriber()
             
             # Submit transcription job
-            transcript = transcriber.transcribe(audio_file_path, config)
+            transcript = await asyncio.to_thread(transcriber.transcribe, audio_file_path, config)
+                                                 
             
             # Wait for completion
             if transcript.status == aai.TranscriptStatus.error:
