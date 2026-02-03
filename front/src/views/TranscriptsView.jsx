@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'preact-router';
 import { getTranscripts } from '../utils/api';
+import { formatDuration } from '../utils/format';
 import './TranscriptsView.css';
 
 const TranscriptsView = () => {
@@ -58,7 +59,7 @@ const TranscriptsView = () => {
                                 </td>
                                 <td>{transcript.id}</td>
                                 <td>{new Date(transcript.upload_date).toLocaleDateString()}</td>
-                                <td>{transcript.duration}</td>
+                                <td>{formatDuration(transcript.duration)}</td>
                                 <td>
                                     <span className={`status-badge ${transcript.status === 'completed' ? 'status-completed' : 'status-processing'}`}>
                                         {transcript.status}

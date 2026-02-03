@@ -2,6 +2,7 @@ import { h } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import { route } from 'preact-router';
 import { fetchTranscript, renameSpeaker, updateTranscriptName, deleteTranscript } from '../utils/api';
+import { formatDuration } from '../utils/format';
 
 export default function TranscriptView({ fileId }) {
   const [loading, setLoading] = useState(true);
@@ -272,7 +273,7 @@ useEffect(() => {
             )
           }</p>
           {nameUpdateError && <p style={{ color: '#d32f2f', marginTop: 4 }}>{nameUpdateError}</p>}
-          <p><strong>Duration:</strong> {transcript.metadata.duration}</p>
+          <p><strong>Duration:</strong> {formatDuration(transcript.metadata.duration)}</p>
           <p><strong>Language:</strong> {transcript.metadata.language}</p>
           <p><strong>Engine:</strong> {transcript.metadata.engine}</p>
           <p><strong>Date:</strong> {transcript.metadata.upload_date}</p>
