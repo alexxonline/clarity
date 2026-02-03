@@ -236,11 +236,23 @@ useEffect(() => {
                   onInput={e => setNewTranscriptName(e.target.value)}
                   onKeyDown={handleNameInputKeyDown}
                   disabled={updatingName}
-                  style={{ marginLeft: 8, marginRight: 4 }}
+                  className="inline-edit-input"
                   autoFocus
                 />
-                <button onClick={handleConfirmNameUpdate} disabled={updatingName} style={{ marginRight: 2 }}>OK</button>
-                <button onClick={handleCancelNameEdit} disabled={updatingName}>Cancel</button>
+                <button
+                  className="inline-edit-btn inline-edit-btn--primary"
+                  onClick={handleConfirmNameUpdate}
+                  disabled={updatingName}
+                >
+                  OK
+                </button>
+                <button
+                  className="inline-edit-btn inline-edit-btn--ghost"
+                  onClick={handleCancelNameEdit}
+                  disabled={updatingName}
+                >
+                  Cancel
+                </button>
               </>
             ) : transcript.metadata.name ? (
               <span
@@ -275,11 +287,23 @@ useEffect(() => {
                       onInput={e => setNewSpeakerName(e.target.value)}
                       onKeyDown={handleSpeakerInputKeyDown}
                       disabled={renaming}
-                      style={{ marginRight: 4 }}
+                      className="inline-edit-input"
                       autoFocus
                     />
-                    <button onClick={handleConfirmRename} disabled={renaming} style={{ marginRight: 2 }}>OK</button>
-                    <button onClick={handleCancelRename} disabled={renaming}>Cancel</button>
+                    <button
+                      className="inline-edit-btn inline-edit-btn--primary"
+                      onClick={handleConfirmRename}
+                      disabled={renaming}
+                    >
+                      OK
+                    </button>
+                    <button
+                      className="inline-edit-btn inline-edit-btn--ghost"
+                      onClick={handleCancelRename}
+                      disabled={renaming}
+                    >
+                      Cancel
+                    </button>
                   </>
                 ) : (
                   <span
