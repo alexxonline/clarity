@@ -17,6 +17,7 @@ export default function TranscriptView({ fileId }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
+  const [copyStatus, setCopyStatus] = useState('');
   
 useEffect(() => {
   setLoading(true);
@@ -95,6 +96,16 @@ useEffect(() => {
     }
   };
 
+  const handleSpeakerInputKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleConfirmRename();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      handleCancelRename();
+    }
+  };
+
   // Handler for starting name edit
   const handleNameClick = () => {
     setEditingName(true);
@@ -143,6 +154,16 @@ useEffect(() => {
     }
   };
 
+  const handleNameInputKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleConfirmNameUpdate();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      handleCancelNameEdit();
+    }
+  };
+
   // Handler for deleting a transcript
   const handleDeleteClick = () => {
     setShowDeleteConfirm(true);
@@ -160,6 +181,21 @@ useEffect(() => {
       setDeleting(false);
       setShowDeleteConfirm(false);
     }
+  };
+
+  const handleCopyTranscript = async () => {
+    const text = transcript.paragraphs
+      .map(block => (block.speaker ? `${block.speaker}: ${block.text}` : block.text))
+      .join('\n');
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyStatus('Copied to clipboard');
+    } catch (e) {
+      setCopyStatus('Copy failed');
+    }
+
+    setTimeout(() => setCopyStatus(''), 2000);
   };
 
   // Helper function to parse transcript text into paragraphs
@@ -198,6 +234,7 @@ useEffect(() => {
                   type="text"
                   value={newTranscriptName}
                   onInput={e => setNewTranscriptName(e.target.value)}
+                  onKeyDown={handleNameInputKeyDown}
                   disabled={updatingName}
                   style={{ marginLeft: 8, marginRight: 4 }}
                   autoFocus
@@ -236,6 +273,7 @@ useEffect(() => {
                       type="text"
                       value={newSpeakerName}
                       onInput={e => setNewSpeakerName(e.target.value)}
+                      onKeyDown={handleSpeakerInputKeyDown}
                       disabled={renaming}
                       style={{ marginRight: 4 }}
                       autoFocus
@@ -267,6 +305,12 @@ useEffect(() => {
           <span className="paragraph-text"> {block.text}</span>
         </div>
       ))}
+      <div className="transcript-actions">
+        <button className="copy-transcript-btn" onClick={handleCopyTranscript}>
+          Copy Transcript
+        </button>
+        {copyStatus && <span className="copy-status">{copyStatus}</span>}
+      </div>
       <div style={{ marginTop: '2rem', borderTop: '1px solid #ccc', paddingTop: '1rem' }}>
         <button 
           onClick={handleDeleteClick} 
