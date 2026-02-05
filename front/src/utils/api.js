@@ -79,3 +79,22 @@ export async function deleteTranscript(transcriptId) {
   // No JSON body is returned on a 204 No Content response
   return;
 }
+
+export async function getAudioFiles() {
+  const response = await fetch('http://localhost:8000/api/audio-files');
+  if (!response.ok) {
+    throw new Error('Failed to fetch audio files');
+  }
+  return response.json();
+}
+
+export async function deleteAudioFile(fileId) {
+  const response = await fetch(`http://localhost:8000/api/audio-files/${encodeURIComponent(fileId)}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to delete audio file');
+  }
+  return;
+}

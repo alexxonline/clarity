@@ -4,6 +4,7 @@ import Router from 'preact-router';
 import UploadView from './views/UploadView';
 import TranscriptView from './views/TranscriptView';
 import TranscriptsView from './views/TranscriptsView'; // Import the new view
+import StorageView from './views/StorageView';
 import './app.css';
 
 export function App() {
@@ -15,6 +16,7 @@ export function App() {
           <div class="nav-links">
             <Link href="/" activeClassName="active">Upload</Link>
             <Link href="/transcripts" activeClassName="active">All Transcripts</Link>
+            <Link href="/storage" activeClassName="active">Storage</Link>
           </div>
         </nav>
       </header>
@@ -23,6 +25,7 @@ export function App() {
           <UploadView path="/" />
           <TranscriptsView path="/transcripts" />
           <TranscriptView path="/transcript/:fileId" />
+          <StorageView path="/storage" />
         </Router>
       </main>
     </div>

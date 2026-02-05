@@ -12,7 +12,8 @@ from models import (
     SpeakerRenameResponse,
     MetadataNameRequest,
     MetadataNameResponse,
-    TranscriptsResponse
+    TranscriptsResponse,
+    AudioFilesResponse
 )
 from services.file_manager import FileManager
 from services.transcription import TranscriptionService
@@ -234,6 +235,38 @@ async def delete_transcript(transcript_id: str):
         raise  # Re-raise HTTPException to ensure FastAPI handles it
     except Exception as e:
         logger.error(f"Error deleting transcript {transcript_id}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.get("/api/audio-files", response_model=AudioFilesResponse)
+async def get_audio_files():
+    """List uploaded audio files with size"""
+    try:
+        files = file_manager.list_audio_files()
+        return AudioFilesResponse(files=files)
+    except Exception as e:
+        logger.error(f"Error listing audio files: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.delete("/api/audio-files/{file_id}", status_code=204)
+async def delete_audio_file(file_id: str):
+    """Delete an uploaded audio file by ID"""
+    try:
+        if not file_manager.audio_file_exists(file_id):
+            raise HTTPException(status_code=404, detail="Audio file not found")
+
+        success = file_manager.delete_audio_file(file_id)
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to delete audio file")
+
+        logger.info(f"Successfully deleted audio file for ID: {file_id}")
+        return
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting audio file {file_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 

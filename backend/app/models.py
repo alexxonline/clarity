@@ -70,3 +70,11 @@ class TranscriptMetadataResponse(BaseModel):
 
 class TranscriptsResponse(BaseModel):
     transcripts: List[TranscriptMetadataResponse]
+
+class AudioFileInfo(BaseModel):
+    id: str
+    filename: str
+    size_bytes: int
+
+class AudioFilesResponse(BaseModel):
+    files: List[AudioFileInfo]

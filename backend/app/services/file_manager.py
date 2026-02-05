@@ -59,6 +59,45 @@ class FileManager:
             if filename.startswith(file_id + "."):
                 return os.path.join(self.audio_dir, filename)
         return None
+
+    def audio_file_exists(self, file_id: str) -> bool:
+        """Check if an audio file exists for the given ID"""
+        audio_path = self.get_audio_file_path(file_id)
+        return bool(audio_path and os.path.exists(audio_path))
+
+    def list_audio_files(self) -> List[Dict]:
+        """List all audio files with size information"""
+        audio_files = []
+        for filename in os.listdir(self.audio_dir):
+            file_path = os.path.join(self.audio_dir, filename)
+            if not os.path.isfile(file_path):
+                continue
+            file_id, _ = os.path.splitext(filename)
+            try:
+                size_bytes = os.path.getsize(file_path)
+            except OSError as e:
+                logger.error(f"Error getting size for {file_path}: {e}")
+                continue
+            audio_files.append({
+                "id": file_id,
+                "filename": filename,
+                "size_bytes": size_bytes
+            })
+        audio_files.sort(key=lambda x: x["size_bytes"], reverse=True)
+        return audio_files
+
+    def delete_audio_file(self, file_id: str) -> bool:
+        """Delete an audio file by ID"""
+        audio_path = self.get_audio_file_path(file_id)
+        if not audio_path or not os.path.exists(audio_path):
+            return False
+        try:
+            os.remove(audio_path)
+            logger.info(f"Deleted audio file: {audio_path}")
+            return True
+        except Exception as e:
+            logger.error(f"Error deleting audio file {audio_path}: {e}")
+            return False
     
     def save_transcript(self, transcript_id: str, transcript_text: str, metadata: Dict):
         """Save transcript in both .txt and .json formats"""
