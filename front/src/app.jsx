@@ -5,6 +5,7 @@ import UploadView from './views/UploadView';
 import TranscriptView from './views/TranscriptView';
 import TranscriptsView from './views/TranscriptsView'; // Import the new view
 import StorageView from './views/StorageView';
+import LocalFilesView from './views/LocalFilesView';
 import './app.css';
 
 export function App() {
@@ -15,6 +16,7 @@ export function App() {
           <Link href="/" className="brand-link">Transcript Creator</Link>
           <div class="nav-links">
             <Link href="/" activeClassName="active">Upload</Link>
+            <Link href="/local-files" activeClassName="active">Local Files</Link>
             <Link href="/transcripts" activeClassName="active">All Transcripts</Link>
             <Link href="/storage" activeClassName="active">Storage</Link>
           </div>
@@ -23,6 +25,7 @@ export function App() {
       <main>
         <Router>
           <UploadView path="/" />
+          <LocalFilesView path="/local-files" />
           <TranscriptsView path="/transcripts" />
           <TranscriptView path="/transcript/:fileId" />
           <StorageView path="/storage" />

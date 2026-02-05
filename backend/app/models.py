@@ -78,3 +78,14 @@ class AudioFileInfo(BaseModel):
 
 class AudioFilesResponse(BaseModel):
     files: List[AudioFileInfo]
+
+class LocalFileInfo(BaseModel):
+    filename: str
+    size_bytes: int
+    modified_at: str
+
+class LocalFilesResponse(BaseModel):
+    files: List[LocalFileInfo]
+
+class LocalFileProcessRequest(BaseModel):
+    filename: str

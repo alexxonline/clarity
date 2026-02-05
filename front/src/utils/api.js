@@ -98,3 +98,25 @@ export async function deleteAudioFile(fileId) {
   }
   return;
 }
+
+export async function getLocalFiles() {
+  const response = await fetch('http://localhost:8000/api/local-files');
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to fetch local files');
+  }
+  return response.json();
+}
+
+export async function processLocalFile(filename) {
+  const response = await fetch('http://localhost:8000/api/local-files/process', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ filename })
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to process local file');
+  }
+  return response.json();
+}

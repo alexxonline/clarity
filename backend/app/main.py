@@ -1,5 +1,7 @@
 import os
 import logging
+from datetime import datetime
+from pathlib import Path
 from typing import Optional
 from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,7 +15,9 @@ from models import (
     MetadataNameRequest,
     MetadataNameResponse,
     TranscriptsResponse,
-    AudioFilesResponse
+    AudioFilesResponse,
+    LocalFilesResponse,
+    LocalFileProcessRequest
 )
 from services.file_manager import FileManager
 from services.transcription import TranscriptionService
@@ -96,6 +100,19 @@ async def update_metadata_name(request: MetadataNameRequest):
 def validate_audio_file(filename: str) -> bool:
     """Validate if file has allowed extension"""
     return any(filename.lower().endswith(ext) for ext in ALLOWED_EXTENSIONS)
+
+
+def get_local_input_directory() -> Path:
+    """Resolve and validate local input directory from env."""
+    directory = os.getenv("LOCAL_INPUT_DIRECTORY")
+    if not directory:
+        raise HTTPException(status_code=400, detail="LOCAL_INPUT_DIRECTORY is not set")
+
+    directory_path = Path(directory).expanduser().resolve()
+    if not directory_path.exists() or not directory_path.is_dir():
+        raise HTTPException(status_code=400, detail="LOCAL_INPUT_DIRECTORY is not a valid directory")
+
+    return directory_path
 
 
 @app.post("/api/upload", response_model=TranscriptUploadResponse)
@@ -246,6 +263,74 @@ async def get_audio_files():
         return AudioFilesResponse(files=files)
     except Exception as e:
         logger.error(f"Error listing audio files: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.get("/api/local-files", response_model=LocalFilesResponse)
+async def get_local_files():
+    """List local input audio/video files with size and modified time"""
+    try:
+        directory_path = get_local_input_directory()
+        files = []
+        for entry in directory_path.iterdir():
+            if not entry.is_file():
+                continue
+            if not validate_audio_file(entry.name):
+                continue
+            try:
+                stat = entry.stat()
+            except OSError as e:
+                logger.error(f"Error reading file stats for {entry}: {e}")
+                continue
+            files.append({
+                "filename": entry.name,
+                "size_bytes": stat.st_size,
+                "modified_at": datetime.fromtimestamp(stat.st_mtime).isoformat()
+            })
+        files.sort(key=lambda x: x["modified_at"], reverse=True)
+        return LocalFilesResponse(files=files)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error listing local files: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.post("/api/local-files/process", response_model=TranscriptUploadResponse)
+async def process_local_file(request: LocalFileProcessRequest):
+    """Process a local input file without uploading"""
+    try:
+        directory_path = get_local_input_directory()
+        requested_path = (directory_path / request.filename).resolve()
+
+        if directory_path not in requested_path.parents and requested_path != directory_path:
+            raise HTTPException(status_code=400, detail="Invalid filename")
+
+        if not requested_path.exists() or not requested_path.is_file():
+            raise HTTPException(status_code=404, detail="File not found")
+
+        if not validate_audio_file(requested_path.name):
+            raise HTTPException(status_code=400, detail="Invalid file type")
+
+        transcript_id = file_manager.copy_audio_file(str(requested_path), requested_path.name)
+        audio_file_path = file_manager.get_audio_file_path(transcript_id)
+        if not audio_file_path:
+            raise HTTPException(status_code=500, detail="Failed to save audio file")
+
+        success = await transcription_service.start_transcription(transcript_id, audio_file_path)
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to start transcription")
+
+        logger.info(f"Started transcription for local file: {requested_path.name}, ID: {transcript_id}")
+
+        return TranscriptUploadResponse(
+            transcript_id=transcript_id,
+            status="pending"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error processing local file: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 

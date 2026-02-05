@@ -2,6 +2,7 @@ import os
 import json
 import uuid
 import logging
+import shutil
 from typing import Optional, Dict, List
 from datetime import datetime
 
@@ -50,6 +51,16 @@ class FileManager:
             f.write(file_content)
         
         logger.info(f"Saved audio file: {file_path}")
+        return file_id
+
+    def copy_audio_file(self, source_path: str, original_filename: str) -> str:
+        """Copy audio file from a local path and return the generated ID"""
+        file_id = str(uuid.uuid4())
+        file_extension = os.path.splitext(original_filename)[1].lower()
+        file_path = os.path.join(self.audio_dir, f"{file_id}{file_extension}")
+
+        shutil.copy2(source_path, file_path)
+        logger.info(f"Copied audio file: {source_path} -> {file_path}")
         return file_id
     
     def get_audio_file_path(self, file_id: str) -> Optional[str]:
