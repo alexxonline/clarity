@@ -16,3 +16,7 @@
 - Local processing is triggered by `POST /api/local-files/process` with `{ "filename": "..." }`, and starts transcription without browser upload.
 - Processing a local file copies it into the app upload storage (`data/audio`) before transcription, so downstream flow matches normal uploads.
 - Frontend exposes this shortcut on `/local-files` and includes a top bar link named `Local Files`.
+- Local file editing is available from `/local-files` via an `Edit` button that routes to `/local-files/edit/:filename`.
+- Local file preview for editing is served by `GET /api/local-files/{filename}/content`.
+- Saving trimmed edits is handled by `POST /api/local-files/save-edited` (multipart form with `filename` and `file`) and writes into `LOCAL_INPUT_DIRECTORY`.
+- The local editor renders waveform on a canvas, supports trim start/end sliders, and includes a live playback playhead marker with absolute and selection-relative timecodes.
