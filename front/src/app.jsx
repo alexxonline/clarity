@@ -13,7 +13,7 @@ export function App() {
     <div>
       <header className="app-header">
         <nav className="app-nav">
-          <Link href="/" className="brand-link">Transcript Creator</Link>
+          <Link href="/" className="brand-link">Clarity</Link>
           <div class="nav-links">
             <Link href="/" activeClassName="active">Upload</Link>
             <Link href="/local-files" activeClassName="active">Local Files</Link>
