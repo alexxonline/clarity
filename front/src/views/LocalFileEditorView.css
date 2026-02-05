@@ -1,0 +1,142 @@
+.local-editor-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.local-editor-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.local-editor-title {
+  margin: 0;
+  font-size: 1.875rem;
+  font-weight: 700;
+}
+
+.local-editor-subtitle {
+  margin: 0.4rem 0 0;
+  color: #475569;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+.local-editor-card {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.85rem;
+  background: #f8fafc;
+  padding: 1rem;
+}
+
+.local-editor-waveform {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0.5rem;
+  border: 1px solid #cbd5e1;
+  background: #e2e8f0;
+}
+
+.local-editor-times {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.7rem;
+  margin: 0.9rem 0;
+  color: #334155;
+  font-weight: 600;
+}
+
+.local-editor-control {
+  margin-top: 0.8rem;
+}
+
+.local-editor-control label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: #334155;
+}
+
+.local-editor-control input[type="range"] {
+  width: 100%;
+}
+
+.local-editor-actions {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.local-editor-primary-btn,
+.local-editor-secondary-btn {
+  border-radius: 999px;
+  border: none;
+  padding: 0.45rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.local-editor-primary-btn {
+  background: #2563eb;
+  color: #fff;
+}
+
+.local-editor-primary-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.local-editor-secondary-btn {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.local-editor-secondary-btn:hover:not(:disabled) {
+  background: #cbd5e1;
+}
+
+.local-editor-primary-btn:disabled,
+.local-editor-secondary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.local-editor-save-card {
+  margin-top: 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.85rem;
+  padding: 1rem;
+  background: #ffffff;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.local-editor-save-card label {
+  font-weight: 600;
+  color: #334155;
+}
+
+.local-editor-save-card input[type="text"] {
+  min-width: 280px;
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.65rem;
+}
+
+.local-editor-error {
+  color: #dc2626;
+  margin-top: 0.8rem;
+}
+
+.local-editor-success {
+  color: #166534;
+  margin-top: 0.8rem;
+}

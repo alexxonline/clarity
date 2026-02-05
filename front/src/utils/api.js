@@ -120,3 +120,30 @@ export async function processLocalFile(filename) {
   }
   return response.json();
 }
+
+export async function fetchLocalFileBlob(filename) {
+  const response = await fetch(`http://localhost:8000/api/local-files/${encodeURIComponent(filename)}/content`);
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to fetch local file content');
+  }
+  return response.blob();
+}
+
+export async function saveEditedLocalFile(filename, file) {
+  const formData = new FormData();
+  formData.append('filename', filename);
+  formData.append('file', file);
+
+  const response = await fetch('http://localhost:8000/api/local-files/save-edited', {
+    method: 'POST',
+    body: formData
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to save edited local file');
+  }
+
+  return response.json();
+}

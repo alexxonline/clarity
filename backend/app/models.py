@@ -89,3 +89,9 @@ class LocalFilesResponse(BaseModel):
 
 class LocalFileProcessRequest(BaseModel):
     filename: str
+
+
+class SaveEditedLocalFileResponse(BaseModel):
+    filename: str
+    size_bytes: int
+    modified_at: str

@@ -6,6 +6,7 @@ import TranscriptView from './views/TranscriptView';
 import TranscriptsView from './views/TranscriptsView'; // Import the new view
 import StorageView from './views/StorageView';
 import LocalFilesView from './views/LocalFilesView';
+import LocalFileEditorView from './views/LocalFileEditorView';
 import './app.css';
 
 export function App() {
@@ -26,6 +27,7 @@ export function App() {
         <Router>
           <UploadView path="/" />
           <LocalFilesView path="/local-files" />
+          <LocalFileEditorView path="/local-files/edit/:filename" />
           <TranscriptsView path="/transcripts" />
           <TranscriptView path="/transcript/:fileId" />
           <StorageView path="/storage" />

@@ -3,7 +3,8 @@ import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
-from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
@@ -17,7 +18,8 @@ from models import (
     TranscriptsResponse,
     AudioFilesResponse,
     LocalFilesResponse,
-    LocalFileProcessRequest
+    LocalFileProcessRequest,
+    SaveEditedLocalFileResponse
 )
 from services.file_manager import FileManager
 from services.transcription import TranscriptionService
@@ -113,6 +115,15 @@ def get_local_input_directory() -> Path:
         raise HTTPException(status_code=400, detail="LOCAL_INPUT_DIRECTORY is not a valid directory")
 
     return directory_path
+
+
+def resolve_local_input_file(filename: str) -> Path:
+    """Resolve a local input file path safely within LOCAL_INPUT_DIRECTORY."""
+    directory_path = get_local_input_directory()
+    requested_path = (directory_path / filename).resolve()
+    if directory_path not in requested_path.parents and requested_path != directory_path:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+    return requested_path
 
 
 @app.post("/api/upload", response_model=TranscriptUploadResponse)
@@ -296,15 +307,69 @@ async def get_local_files():
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+@app.get("/api/local-files/{filename}/content")
+async def get_local_file_content(filename: str):
+    """Serve a local input file for in-browser preview/editing."""
+    try:
+        requested_path = resolve_local_input_file(filename)
+
+        if not requested_path.exists() or not requested_path.is_file():
+            raise HTTPException(status_code=404, detail="File not found")
+
+        if not validate_audio_file(requested_path.name):
+            raise HTTPException(status_code=400, detail="Invalid file type")
+
+        return FileResponse(
+            path=str(requested_path),
+            filename=requested_path.name,
+            media_type="application/octet-stream"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error serving local file {filename}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.post("/api/local-files/save-edited", response_model=SaveEditedLocalFileResponse)
+async def save_edited_local_file(
+    file: UploadFile = File(...),
+    filename: str = Form(...)
+):
+    """Save an edited local file into LOCAL_INPUT_DIRECTORY."""
+    try:
+        if not validate_audio_file(filename):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
+            )
+
+        target_path = resolve_local_input_file(filename)
+        if target_path.is_dir():
+            raise HTTPException(status_code=400, detail="Invalid filename")
+
+        file_content = await file.read()
+        with open(target_path, "wb") as destination:
+            destination.write(file_content)
+
+        stat = target_path.stat()
+        return SaveEditedLocalFileResponse(
+            filename=target_path.name,
+            size_bytes=stat.st_size,
+            modified_at=datetime.fromtimestamp(stat.st_mtime).isoformat()
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error saving edited local file {filename}: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
 @app.post("/api/local-files/process", response_model=TranscriptUploadResponse)
 async def process_local_file(request: LocalFileProcessRequest):
     """Process a local input file without uploading"""
     try:
-        directory_path = get_local_input_directory()
-        requested_path = (directory_path / request.filename).resolve()
-
-        if directory_path not in requested_path.parents and requested_path != directory_path:
-            raise HTTPException(status_code=400, detail="Invalid filename")
+        requested_path = resolve_local_input_file(request.filename)
 
         if not requested_path.exists() or not requested_path.is_file():
             raise HTTPException(status_code=404, detail="File not found")

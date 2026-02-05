@@ -106,3 +106,18 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.local-files-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.local-files-action-btn--ghost {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.local-files-action-btn--ghost:hover:not(:disabled) {
+  background: #cbd5e1;
+}

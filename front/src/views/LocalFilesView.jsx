@@ -18,6 +18,7 @@ const LocalFilesView = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [processing, setProcessing] = useState('');
+  const [openingEditor, setOpeningEditor] = useState('');
 
   const totalSize = useMemo(
     () => files.reduce((sum, file) => sum + (file.size_bytes || 0), 0),
@@ -52,6 +53,11 @@ const LocalFilesView = () => {
     } finally {
       setProcessing('');
     }
+  };
+
+  const handleEdit = (filename) => {
+    setOpeningEditor(filename);
+    route(`/local-files/edit/${encodeURIComponent(filename)}`);
   };
 
   if (loading) return <div className="centered-text-container">Loading...</div>;
@@ -93,13 +99,22 @@ const LocalFilesView = () => {
                 <td>{new Date(file.modified_at).toLocaleString()}</td>
                 <td>{formatBytes(file.size_bytes || 0)}</td>
                 <td>
-                  <button
-                    className="local-files-action-btn"
-                    onClick={() => handleProcess(file.filename)}
-                    disabled={processing === file.filename}
-                  >
-                    {processing === file.filename ? 'Processing…' : 'Process'}
-                  </button>
+                  <div className="local-files-actions">
+                    <button
+                      className="local-files-action-btn local-files-action-btn--ghost"
+                      onClick={() => handleEdit(file.filename)}
+                      disabled={openingEditor === file.filename}
+                    >
+                      {openingEditor === file.filename ? 'Opening…' : 'Edit'}
+                    </button>
+                    <button
+                      className="local-files-action-btn"
+                      onClick={() => handleProcess(file.filename)}
+                      disabled={processing === file.filename}
+                    >
+                      {processing === file.filename ? 'Processing…' : 'Process'}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
