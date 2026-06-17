@@ -4,6 +4,8 @@ import { route } from 'preact-router';
 import { getLocalFiles, processLocalFile } from '../utils/api';
 import './LocalFilesView.css';
 
+const ENGINES = ['AssemblyAI', 'ElevenLabs'];
+
 const formatBytes = (bytes) => {
   if (bytes === 0) return '0 B';
   const k = 1024;
@@ -19,6 +21,7 @@ const LocalFilesView = () => {
   const [error, setError] = useState('');
   const [processing, setProcessing] = useState('');
   const [openingEditor, setOpeningEditor] = useState('');
+  const [engine, setEngine] = useState('AssemblyAI');
 
   const totalSize = useMemo(
     () => files.reduce((sum, file) => sum + (file.size_bytes || 0), 0),
@@ -46,7 +49,7 @@ const LocalFilesView = () => {
     setProcessing(filename);
     setError('');
     try {
-      const result = await processLocalFile(filename);
+      const result = await processLocalFile(filename, engine);
       route(`/transcript/${encodeURIComponent(result.transcript_id)}`);
     } catch (err) {
       setError(err.message || 'Failed to process local file.');
@@ -77,6 +80,18 @@ const LocalFilesView = () => {
           <span className="local-files-summary-value">{formatBytes(totalSize)}</span>
         </div>
       </div>
+      <label className="local-files-engine">
+        <span>Transcription engine</span>
+        <select
+          value={engine}
+          onChange={e => setEngine(e.target.value)}
+          disabled={Boolean(processing)}
+        >
+          {ENGINES.map(option => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
+      </label>
 
       {files.length === 0 ? (
         <div className="no-transcripts-container">

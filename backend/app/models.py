@@ -89,6 +89,11 @@ class LocalFilesResponse(BaseModel):
 
 class LocalFileProcessRequest(BaseModel):
     filename: str
+    engine: str = "AssemblyAI"
+
+
+class AudioFileProcessRequest(BaseModel):
+    engine: str = "AssemblyAI"
 
 
 class SaveEditedLocalFileResponse(BaseModel):

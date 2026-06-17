@@ -5,11 +5,13 @@ import { uploadFile } from '../utils/api';
 
 const ACCEPTED_TYPES = ['audio/mp3', 'audio/aac', 'audio/wav', 'video/mp4'];
 const ACCEPTED_EXTS = ['.mp3', '.mp4', '.aac', '.wav'];
+const ENGINES = ['AssemblyAI', 'ElevenLabs'];
 
 export default function UploadView() {
   const [file, setFile] = useState(null);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
+  const [engine, setEngine] = useState('AssemblyAI');
 
   function handleDrop(e) {
     e.preventDefault();
@@ -29,11 +31,11 @@ export default function UploadView() {
     setFile(selectedFile);
     setProgress(10);
     try {
-      const result = await uploadFile(selectedFile);
+      const result = await uploadFile(selectedFile, engine);
       setProgress(100);
       route(`/transcript/${encodeURIComponent(result.transcript_id)}`);
     } catch (err) {
-      setError('Upload failed.');
+      setError(err.message || 'Upload failed.');
       setProgress(0);
     }
   }
@@ -54,6 +56,18 @@ export default function UploadView() {
       >
         Drag & Drop file here
       </div>
+      <label className="engine-field">
+        <span>Transcription engine</span>
+        <select
+          value={engine}
+          onChange={e => setEngine(e.target.value)}
+          disabled={progress > 0 && progress < 100}
+        >
+          {ENGINES.map(option => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
+      </label>
       <input
         type="file"
         accept={ACCEPTED_EXTS.join(',')}

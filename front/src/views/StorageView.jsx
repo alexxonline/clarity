@@ -1,6 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { deleteAudioFile, getAudioFiles } from '../utils/api';
+import { h } from 'preact';
+import { useEffect, useMemo, useState } from 'preact/hooks';
+import { route } from 'preact-router';
+import { deleteAudioFile, getAudioFiles, processAudioFile } from '../utils/api';
 import './StorageView.css';
+
+const ENGINES = ['AssemblyAI', 'ElevenLabs'];
 
 const formatBytes = (bytes) => {
   if (bytes === 0) return '0 B';
@@ -16,7 +20,10 @@ const StorageView = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [processingId, setProcessingId] = useState(null);
   const [deleteError, setDeleteError] = useState(null);
+  const [processError, setProcessError] = useState(null);
+  const [engine, setEngine] = useState('AssemblyAI');
 
   const totalSize = useMemo(
     () => files.reduce((sum, file) => sum + (file.size_bytes || 0), 0),
@@ -55,6 +62,19 @@ const StorageView = () => {
     }
   };
 
+  const handleProcess = async (fileId) => {
+    setProcessingId(fileId);
+    setProcessError(null);
+    try {
+      const result = await processAudioFile(fileId, engine);
+      route(`/transcript/${encodeURIComponent(result.transcript_id)}`);
+    } catch (err) {
+      setProcessError(err.message || 'Failed to process audio file.');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   if (loading) return <div className="centered-text-container">Loading...</div>;
   if (error) return <div className="centered-text-container error-text">{error}</div>;
 
@@ -67,6 +87,18 @@ const StorageView = () => {
           <span className="storage-summary-value">{formatBytes(totalSize)}</span>
         </div>
       </div>
+      <label className="storage-engine">
+        <span>Transcription engine</span>
+        <select
+          value={engine}
+          onChange={e => setEngine(e.target.value)}
+          disabled={Boolean(processingId)}
+        >
+          {ENGINES.map(option => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
+      </label>
 
       {files.length === 0 ? (
         <div className="no-transcripts-container">
@@ -89,13 +121,22 @@ const StorageView = () => {
                 <td className="storage-file-id">{file.id}</td>
                 <td>{formatBytes(file.size_bytes || 0)}</td>
                 <td>
-                  <button
-                    className="storage-delete-btn"
-                    onClick={() => handleDelete(file.id)}
-                    disabled={deletingId === file.id}
-                  >
-                    {deletingId === file.id ? 'Deleting…' : 'Delete'}
-                  </button>
+                  <div className="storage-actions">
+                    <button
+                      className="storage-process-btn"
+                      onClick={() => handleProcess(file.id)}
+                      disabled={processingId === file.id}
+                    >
+                      {processingId === file.id ? 'Processing…' : 'Process'}
+                    </button>
+                    <button
+                      className="storage-delete-btn"
+                      onClick={() => handleDelete(file.id)}
+                      disabled={deletingId === file.id}
+                    >
+                      {deletingId === file.id ? 'Deleting…' : 'Delete'}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -105,6 +146,9 @@ const StorageView = () => {
 
       {deleteError && (
         <div className="storage-error">{deleteError}</div>
+      )}
+      {processError && (
+        <div className="storage-error">{processError}</div>
       )}
     </div>
   );

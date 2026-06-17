@@ -8,21 +8,40 @@ from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from models import (
-    TranscriptUploadResponse, 
-    TranscriptResponse, 
-    SpeakerRenameRequest, 
-    SpeakerRenameResponse,
-    MetadataNameRequest,
-    MetadataNameResponse,
-    TranscriptsResponse,
-    AudioFilesResponse,
-    LocalFilesResponse,
-    LocalFileProcessRequest,
-    SaveEditedLocalFileResponse
-)
-from services.file_manager import FileManager
-from services.transcription import TranscriptionService
+try:
+    from .models import (
+        TranscriptUploadResponse,
+        TranscriptResponse,
+        SpeakerRenameRequest,
+        SpeakerRenameResponse,
+        MetadataNameRequest,
+        MetadataNameResponse,
+        TranscriptsResponse,
+        AudioFilesResponse,
+        AudioFileProcessRequest,
+        LocalFilesResponse,
+        LocalFileProcessRequest,
+        SaveEditedLocalFileResponse
+    )
+    from .services.file_manager import FileManager
+    from .services.transcription import TranscriptionService
+except ImportError:
+    from models import (
+        TranscriptUploadResponse,
+        TranscriptResponse,
+        SpeakerRenameRequest,
+        SpeakerRenameResponse,
+        MetadataNameRequest,
+        MetadataNameResponse,
+        TranscriptsResponse,
+        AudioFilesResponse,
+        AudioFileProcessRequest,
+        LocalFilesResponse,
+        LocalFileProcessRequest,
+        SaveEditedLocalFileResponse
+    )
+    from services.file_manager import FileManager
+    from services.transcription import TranscriptionService
 
 # Load environment variables
 load_dotenv()
@@ -48,9 +67,25 @@ app.add_middleware(
 
 # Initialize services
 file_manager = FileManager()
+
+
+def get_optional_int_env(name: str) -> Optional[int]:
+    """Read an optional integer env var."""
+    value = os.getenv(name)
+    if not value:
+        return None
+    try:
+        return int(value)
+    except ValueError:
+        logger.warning("Ignoring invalid integer value for %s: %s", name, value)
+        return None
+
+
 transcription_service = TranscriptionService(
-    api_key=os.getenv("ASSEMBLYAI_API_KEY"),
-    file_manager=file_manager
+    assemblyai_api_key=os.getenv("ASSEMBLYAI_API_KEY"),
+    elevenlabs_api_key=os.getenv("ELEVENLABS_API_KEY"),
+    file_manager=file_manager,
+    elevenlabs_timeout_seconds=get_optional_int_env("ELEVENLABS_TIMEOUT_SECONDS")
 )
 
 # Allowed file extensions
@@ -104,6 +139,16 @@ def validate_audio_file(filename: str) -> bool:
     return any(filename.lower().endswith(ext) for ext in ALLOWED_EXTENSIONS)
 
 
+def normalize_engine_or_400(engine: Optional[str]) -> str:
+    """Normalize engine selection for API requests."""
+    try:
+        normalized_engine = transcription_service.normalize_engine(engine)
+        transcription_service.require_engine_configuration(normalized_engine)
+        return normalized_engine
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 def get_local_input_directory() -> Path:
     """Resolve and validate local input directory from env."""
     directory = os.getenv("LOCAL_INPUT_DIRECTORY")
@@ -127,9 +172,14 @@ def resolve_local_input_file(filename: str) -> Path:
 
 
 @app.post("/api/upload", response_model=TranscriptUploadResponse)
-async def upload_audio(file: UploadFile = File(...)):
+async def upload_audio(
+    file: UploadFile = File(...),
+    engine: str = Form("AssemblyAI")
+):
     """Upload audio file and start transcription"""
     try:
+        selected_engine = normalize_engine_or_400(engine)
+
         # Validate file type
         if not validate_audio_file(file.filename):
             raise HTTPException(
@@ -149,11 +199,11 @@ async def upload_audio(file: UploadFile = File(...)):
             raise HTTPException(status_code=500, detail="Failed to save audio file")
         
         # Start transcription
-        success = await transcription_service.start_transcription(transcript_id, audio_file_path)
+        success = await transcription_service.start_transcription(transcript_id, audio_file_path, selected_engine)
         if not success:
             raise HTTPException(status_code=500, detail="Failed to start transcription")
         
-        logger.info(f"Started transcription for file: {file.filename}, ID: {transcript_id}")
+        logger.info(f"Started {selected_engine} transcription for file: {file.filename}, ID: {transcript_id}")
         
         return TranscriptUploadResponse(
             transcript_id=transcript_id,
@@ -369,6 +419,7 @@ async def save_edited_local_file(
 async def process_local_file(request: LocalFileProcessRequest):
     """Process a local input file without uploading"""
     try:
+        selected_engine = normalize_engine_or_400(request.engine)
         requested_path = resolve_local_input_file(request.filename)
 
         if not requested_path.exists() or not requested_path.is_file():
@@ -382,11 +433,11 @@ async def process_local_file(request: LocalFileProcessRequest):
         if not audio_file_path:
             raise HTTPException(status_code=500, detail="Failed to save audio file")
 
-        success = await transcription_service.start_transcription(transcript_id, audio_file_path)
+        success = await transcription_service.start_transcription(transcript_id, audio_file_path, selected_engine)
         if not success:
             raise HTTPException(status_code=500, detail="Failed to start transcription")
 
-        logger.info(f"Started transcription for local file: {requested_path.name}, ID: {transcript_id}")
+        logger.info(f"Started {selected_engine} transcription for local file: {requested_path.name}, ID: {transcript_id}")
 
         return TranscriptUploadResponse(
             transcript_id=transcript_id,
@@ -396,6 +447,33 @@ async def process_local_file(request: LocalFileProcessRequest):
         raise
     except Exception as e:
         logger.error(f"Error processing local file: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@app.post("/api/audio-files/{file_id}/process", response_model=TranscriptUploadResponse)
+async def process_audio_file(file_id: str, request: AudioFileProcessRequest):
+    """Process an existing uploaded audio file by ID"""
+    try:
+        selected_engine = normalize_engine_or_400(request.engine)
+
+        audio_file_path = file_manager.get_audio_file_path(file_id)
+        if not audio_file_path or not Path(audio_file_path).is_file():
+            raise HTTPException(status_code=404, detail="Audio file not found")
+
+        success = await transcription_service.start_transcription(file_id, audio_file_path, selected_engine)
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to start transcription")
+
+        logger.info(f"Started {selected_engine} transcription for audio file ID: {file_id}")
+
+        return TranscriptUploadResponse(
+            transcript_id=file_id,
+            status="pending"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error processing audio file {file_id}: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 

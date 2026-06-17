@@ -1,11 +1,12 @@
 # Audio Transcription API
 
-An asynchronous audio transcription API built with FastAPI and AssemblyAI that allows users to upload audio files and retrieve transcriptions with speaker labels.
+An asynchronous audio transcription API built with FastAPI that allows users to transcribe audio files with AssemblyAI or ElevenLabs and retrieve transcriptions with speaker labels.
 
 ## Features
 
 - **Asynchronous Processing**: Upload audio files and get transcriptions processed in the background
 - **Speaker Labeling**: Automatic speaker identification and labeling
+- **Engine Selection**: Choose AssemblyAI or ElevenLabs per transcription request
 - **Multiple Formats**: Supports MP3, WAV, M4A, FLAC, and AAC files
 - **Speaker Renaming**: Rename speakers in completed transcripts
 - **Docker Support**: Fully containerized with Docker and docker-compose
@@ -15,7 +16,7 @@ An asynchronous audio transcription API built with FastAPI and AssemblyAI that a
 
 - **Python 3.13+**
 - **FastAPI** - Web framework
-- **AssemblyAI** - Transcription service
+- **AssemblyAI / ElevenLabs** - Transcription services
 - **Docker** - Containerization
 - **Uvicorn** - ASGI server
 
@@ -28,14 +29,17 @@ cd backend
 cp .env.example .env
 ```
 
-### 2. Get AssemblyAI API Key
+### 2. Get API Keys
 
 1. Sign up at [AssemblyAI](https://www.assemblyai.com/)
-2. Get your API key from the dashboard
-3. Update the `.env` file with your API key:
+2. Sign up at [ElevenLabs](https://elevenlabs.io/)
+3. Get your API keys from each dashboard
+4. Update the `.env` file with the keys for the engines you plan to use:
 
 ```env
 ASSEMBLYAI_API_KEY=your_actual_api_key_here
+ELEVENLABS_API_KEY=your_actual_api_key_here
+ELEVENLABS_TIMEOUT_SECONDS=1800
 ```
 
 ### 3. Run with Docker (Recommended)
@@ -68,7 +72,7 @@ Upload an audio file for transcription.
 **Request:**
 - Method: POST
 - Content-Type: multipart/form-data
-- Body: Audio file (mp3, wav, m4a, flac, aac)
+- Body: Audio file (mp3, wav, m4a, flac, aac) and optional `engine` field (`AssemblyAI` or `ElevenLabs`)
 
 **Response:**
 ```json
@@ -81,6 +85,7 @@ Upload an audio file for transcription.
 **cURL Example:**
 ```bash
 curl -X POST "http://localhost:8000/api/upload" \
+  -F "engine=ElevenLabs" \
   -F "file=@audio.mp3"
 ```
 
@@ -164,7 +169,7 @@ backend/
 │   ├── main.py                 # FastAPI application
 │   ├── models.py               # Pydantic models
 │   ├── services/
-│   │   ├── transcription.py    # AssemblyAI integration
+│   │   ├── transcription.py    # Transcription engine integrations
 │   │   └── file_manager.py     # File operations
 │   └── data/
 │       ├── audio/              # Uploaded audio files
@@ -230,14 +235,16 @@ uvicorn main:app --reload --log-level debug
 
 ### Common Issues
 
-1. **AssemblyAI API Key**: Make sure your API key is valid and has sufficient credits
-2. **File Permissions**: Ensure Docker has permission to mount volumes
-3. **Port Conflicts**: Make sure port 8000 is available
-4. **Memory**: Large audio files may require more memory
+1. **Transcription API Key**: Make sure the selected engine's API key is set, valid, and has sufficient credits
+2. **ElevenLabs Read Timeout**: For large files, increase `ELEVENLABS_TIMEOUT_SECONDS`
+3. **File Permissions**: Ensure Docker has permission to mount volumes
+4. **Port Conflicts**: Make sure port 8000 is available
+5. **Memory**: Large audio files may require more memory
 
 ### Support
 
 For issues related to:
 - **AssemblyAI**: Check [AssemblyAI Documentation](https://www.assemblyai.com/docs/)
+- **ElevenLabs**: Check [ElevenLabs Documentation](https://elevenlabs.io/docs)
 - **FastAPI**: Check [FastAPI Documentation](https://fastapi.tiangolo.com/)
 - **Docker**: Check [Docker Documentation](https://docs.docker.com/)

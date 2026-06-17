@@ -53,6 +53,26 @@
   font-weight: 700;
 }
 
+.storage-engine {
+  display: inline-grid;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  text-align: left;
+  color: #374151;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.storage-engine select {
+  min-width: 180px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #111827;
+  padding: 0.5rem 0.65rem;
+  font: inherit;
+}
+
 .storage-table {
   width: 100%;
   border-collapse: collapse;
@@ -85,6 +105,29 @@
   color: #6b7280;
 }
 
+.storage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.storage-process-btn {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+}
+
+.storage-process-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.2);
+}
+
 .storage-delete-btn {
   background: #ef4444;
   color: #ffffff;
@@ -102,6 +145,7 @@
   box-shadow: 0 6px 12px rgba(220, 38, 38, 0.2);
 }
 
+.storage-process-btn:disabled,
 .storage-delete-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;

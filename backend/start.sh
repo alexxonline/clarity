@@ -7,7 +7,7 @@ echo "=================================="
 # Check if .env file exists
 if [ ! -f ".env" ]; then
     echo "⚠️  .env file not found!"
-    echo "Please copy .env.example to .env and update with your AssemblyAI API key"
+    echo "Please copy .env.example to .env and update with your transcription API key"
     echo ""
     echo "cp .env.example .env"
     echo "# Then edit .env with your API key"

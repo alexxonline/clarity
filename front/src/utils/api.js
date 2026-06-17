@@ -38,14 +38,18 @@ export async function renameSpeaker(transcriptId, currentName, newName) {
 }
 // API utility for uploading files and fetching transcripts
 
-export async function uploadFile(file) {
+export async function uploadFile(file, engine = 'AssemblyAI') {
   const formData = new FormData();
   formData.append('file', file);
+  formData.append('engine', engine);
   const response = await fetch('http://localhost:8000/api/upload', {
     method: 'POST',
     body: formData,
   });
-  if (!response.ok) throw new Error('Upload failed');
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || 'Upload failed');
+  }
   return response.json(); // expects { transcript_id }
 }
 
@@ -99,6 +103,19 @@ export async function deleteAudioFile(fileId) {
   return;
 }
 
+export async function processAudioFile(fileId, engine = 'AssemblyAI') {
+  const response = await fetch(`http://localhost:8000/api/audio-files/${encodeURIComponent(fileId)}/process`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ engine })
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to process audio file');
+  }
+  return response.json();
+}
+
 export async function getLocalFiles() {
   const response = await fetch('http://localhost:8000/api/local-files');
   if (!response.ok) {
@@ -108,11 +125,11 @@ export async function getLocalFiles() {
   return response.json();
 }
 
-export async function processLocalFile(filename) {
+export async function processLocalFile(filename, engine = 'AssemblyAI') {
   const response = await fetch('http://localhost:8000/api/local-files/process', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ filename })
+    body: JSON.stringify({ filename, engine })
   });
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
